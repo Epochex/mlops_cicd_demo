@@ -1,0 +1,66 @@
+# .github/workflows/ci-cd.yml
+
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+    branches:
+      - master
+      - main
+
+jobs:
+  build-and-push:
+    runs-on: self-hosted  # 使用自托管 Runner
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build and push train image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./Dockerfile.train
+          push: true
+          tags: hirschazer/mnist-train:latest
+
+      - name: Build and push upload image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./Dockerfile.upload
+          push: true
+          tags: hirschazer/mnist-upload:latest
+
+  deploy:
+    needs: build-and-push
+    runs-on: self-hosted  # 使用自托管 Runner
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Decode Kubeconfig
+        run: |
+          echo "${{ secrets.KUBECONFIG }}" | base64 --decode > $HOME/.kube/config
+
+      - name: Deploy InferenceService
+        run: |
+          kubectl apply -f InferenceService.yaml
+
