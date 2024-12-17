@@ -1,0 +1,20 @@
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  name: mnist-model
+spec:
+  predictor:
+    pytorch:
+      storageUri: "s3://mnist-models/mnist_model.pt"
+      env:
+        - name: AWS_ACCESS_KEY_ID
+          value: "minio"
+        - name: AWS_SECRET_ACCESS_KEY
+          value: "minio123"
+        - name: AWS_DEFAULT_REGION
+          value: "us-east-1"
+      resources:
+        requests:
+          cpu: "1"
+        limits:
+          cpu: "2"

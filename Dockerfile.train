@@ -1,0 +1,13 @@
+# Dockerfile.train
+# 这样做可以在 requirements.txt 没有变化时，Docker 会缓存依赖安装步骤，节省构建时间和带宽
+
+FROM pytorch/pytorch:2.2.0-cpu
+
+WORKDIR /app
+
+COPY requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY train_model.py /app/train_model.py
+
+ENTRYPOINT ["python", "train_model.py"]

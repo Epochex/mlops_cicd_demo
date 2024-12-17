@@ -1,0 +1,14 @@
+# Dockerfile.upload
+
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# 复制并安装依赖
+COPY requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 复制上传代码
+COPY upload_model.py /app/upload_model.py
+
+ENTRYPOINT ["python", "upload_model.py"]
