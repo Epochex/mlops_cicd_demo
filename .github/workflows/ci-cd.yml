@@ -1,7 +1,5 @@
 # .github/workflows/ci-cd.yml
-
 name: CI/CD Pipeline
-
 on:
   push:
     branches:
@@ -11,23 +9,22 @@ on:
     branches:
       - master
       - main
-
 jobs:
   build-and-push:
-    runs-on: self-hosted  # 使用自托管 Runner
+    runs-on: self-hosted  
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
+      
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-
+      
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
-
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}  # 这里改成 TOKEN
+      
       - name: Build and push train image
         uses: docker/build-push-action@v4
         with:
@@ -35,7 +32,7 @@ jobs:
           file: ./Dockerfile.train
           push: true
           tags: hirschazer/mnist-train:latest
-
+      
       - name: Build and push upload image
         uses: docker/build-push-action@v4
         with:
@@ -46,7 +43,7 @@ jobs:
 
   deploy:
     needs: build-and-push
-    runs-on: self-hosted  # 使用自托管 Runner
+    runs-on: self-hosted
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -55,12 +52,13 @@ jobs:
         uses: azure/setup-kubectl@v3
         with:
           version: 'latest'
-
+          
       - name: Decode Kubeconfig
         run: |
+          mkdir -p $HOME/.kube
           echo "${{ secrets.KUBECONFIG }}" | base64 --decode > $HOME/.kube/config
-
+          chmod 600 $HOME/.kube/config
+      
       - name: Deploy InferenceService
         run: |
-          kubectl apply -f InferenceService.yaml
-
+          kubectl apply -f kserve_model_deployment.yaml  # 注意这里的文件名要和您实际的文件名匹配
