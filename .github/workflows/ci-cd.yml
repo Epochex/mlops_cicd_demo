@@ -46,26 +46,40 @@ jobs:
 
   deploy:
     needs: build-and-push
-    runs-on: self-hosted
+    runs-on: ubuntu-latest  # 使用 GitHub 托管的 runner
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # 配置 kubectl
       - name: Setup kubectl
         uses: azure/setup-kubectl@v3
         with:
           version: 'latest'
-          
+
+      # 解码 Kubeconfig（从 Secrets 中获取）
       - name: Decode Kubeconfig
         run: |
           mkdir -p $HOME/.kube
           echo "${{ secrets.KUBECONFIG }}" | base64 --decode > $HOME/.kube/config
           chmod 600 $HOME/.kube/config
-      
+
+      # 部署 InferenceService
       - name: Deploy InferenceService
         run: |
-          kubectl apply -f kserve_model_deployment.yaml  # 确保文件名正确
-      
+          kubectl apply -f kserve_model_deployment.yaml
+
+      # 设置 Python 环境并运行 Pipeline
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install kfp
+
       - name: Trigger Pipeline Run
         run: |
           python -c "
@@ -79,4 +93,3 @@ jobs:
           )
           print(f'Pipeline run created with ID: {run.run_id}')
           "
-
