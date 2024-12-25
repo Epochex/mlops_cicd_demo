@@ -65,4 +65,18 @@ jobs:
       - name: Deploy InferenceService
         run: |
           kubectl apply -f kserve_model_deployment.yaml  # 确保文件名正确
+      
+      - name: Trigger Pipeline Run
+        run: |
+          python -c "
+          from kfp import Client
+          client = Client(host='http://45.149.207.13:38183/apis/v1beta1')  # 如果通过 Ingress
+          experiment = client.create_experiment('mnist-experiment')
+          run = client.run_pipeline(
+              experiment_id=experiment.id,
+              job_name='mnist-pipeline-run',
+              pipeline_package_path='mnist_pipeline.yaml'
+          )
+          print(f'Pipeline run created with ID: {run.run_id}')
+          "
 
