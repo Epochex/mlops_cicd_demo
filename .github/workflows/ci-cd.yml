@@ -84,7 +84,7 @@ jobs:
         run: |
           python -c "
           from kfp import Client
-          client = Client(host='http://45.149.207.13:38183/apis/v1beta1')  # 如果通过 Ingress
+          client = Client(host='http://45.149.207.13:6443/apis/v1beta1')  # 如果通过 Ingress
           experiment = client.create_experiment('mnist-experiment')
           run = client.run_pipeline(
               experiment_id=experiment.id,
