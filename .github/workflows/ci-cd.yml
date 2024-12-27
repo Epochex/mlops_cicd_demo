@@ -50,15 +50,29 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # deploy job steps
       - name: Setup kubectl
         run: |
-          # 设置 kubeconfig
           mkdir -p $HOME/.kube
-          # 使用之前配置的证书和 token
-          kubectl config set-cluster kubeflow --server=https://45.149.207.13:6443 --insecure-skip-tls-verify=true
-          kubectl config set-credentials test-admin --token=${{ secrets.KUBE_TOKEN }}
-          kubectl config set-context kubeflow --cluster=kubeflow --user=test-admin
-          kubectl config use-context kubeflow
+          cat <<EOF > $HOME/.kube/config
+          apiVersion: v1
+          clusters:
+          - cluster:
+              server: https://45.149.207.13:6443
+              insecure-skip-tls-verify: true
+            name: kubeflow
+          contexts:
+          - context:
+              cluster: kubeflow
+              user: test-admin
+            name: kubeflow
+          current-context: kubeflow
+          users:
+          - name: test-admin
+            user:
+              token: "${{ secrets.KUBE_TOKEN }}"
+          EOF
+
 
       # 部署 InferenceService
       - name: Deploy InferenceService
