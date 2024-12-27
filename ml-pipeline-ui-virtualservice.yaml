@@ -1,0 +1,46 @@
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  creationTimestamp: "2024-12-26T03:13:32Z"
+  generation: 1
+  labels:
+    app.kubernetes.io/component: ml-pipeline
+    app.kubernetes.io/name: kubeflow-pipelines
+    application-crd-id: kubeflow-pipelines
+  name: ml-pipeline-ui
+  namespace: kubeflow
+  resourceVersion: "5414"
+  uid: 6a1b3604-1164-4e53-99fd-5c57d2e33490
+spec:
+  gateways:
+  - kubeflow-gateway
+  hosts:
+  - '*'
+  http:
+  - match:
+    - uri:
+        exact: /pipeline/healthz  # 匹配特定的 healthz 路径
+    rewrite:
+      uri: /health               # 重写路径为 /health，或者可移除此段直接返回静态响应
+    fault:
+      abort:
+        httpStatus: 200          # 静态返回健康状态
+        percentage:
+          value: 100
+    route:
+    - destination:
+        host: ml-pipeline-ui.kubeflow.svc.cluster.local
+        port:
+          number: 80
+  - match:
+    - uri:
+        prefix: /pipeline         # 匹配其他路径
+    rewrite:
+      uri: /pipeline
+    route:
+    - destination:
+        host: ml-pipeline-ui.kubeflow.svc.cluster.local
+        port:
+          number: 80
+    timeout: 300s
+

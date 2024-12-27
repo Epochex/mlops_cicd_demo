@@ -1,0 +1,27 @@
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  creationTimestamp: "2024-12-26T03:13:34Z"
+  generation: 1
+  name: istio-ingressgateway-oauth2-proxy
+  namespace: istio-system
+  resourceVersion: "5441"
+  uid: 5523fbb8-5255-4e72-85b8-5e4ac52166cf
+spec:
+  action: CUSTOM
+  provider:
+    name: oauth2-proxy
+  rules:
+  - to:
+    - operation:
+        notPaths:
+        - /dex/*
+        - /dex/**
+        - /oauth2/*
+    when:
+    - key: request.headers[authorization]
+      notValues:
+      - '*'
+  selector:
+    matchLabels:
+      app: istio-ingressgateway

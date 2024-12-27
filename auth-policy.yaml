@@ -1,0 +1,36 @@
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: istio-ingressgateway-oauth2-proxy
+  namespace: istio-system
+spec:
+  action: CUSTOM
+  provider:
+    name: oauth2-proxy
+  rules:
+  # 允许 /pipeline/healthz 和 /pipeline/* 跳过身份验证
+  - to:
+    - operation:
+        paths:
+        - /pipeline/healthz
+        - /pipeline/*
+    when:
+    - key: request.headers[authorization]
+      notValues:
+      - '*'
+
+  # 对其他路径要求身份验证
+  - to:
+    - operation:
+        notPaths:
+        - /dex/*
+        - /dex/**
+        - /oauth2/*
+    when:
+    - key: request.headers[authorization]
+      notValues:
+      - '*'
+  selector:
+    matchLabels:
+      app: istio-ingressgateway
+

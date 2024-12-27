@@ -6,8 +6,26 @@ Handling connection for 38183
 Handling connection for 38183
 Handling connection for 38183
 Handling connection for 38183
-E1227 04:52:22.959345 1333623 portforward.go:385] "Unhandled Error" err="error copying from remote stream to local connection: readfrom tcp4 45.149.207.13:38183->88.163.21.68:55973: write tcp4 45.149.207.13:38183->88.163.21.68:55973: write: broken pipe"
 Handling connection for 38183
 Handling connection for 38183
 Handling connection for 38183
-E1227 04:53:45.574030 1333623 portforward.go:374] "Unhandled Error" err="error creating forwarding stream for port 38183 -> 8080: Timeout occurred"
+Handling connection for 38183
+Handling connection for 38183
+Handling connection for 38183
+Handling connection for 38183
+Handling connection for 38183
+Handling connection for 38183
+Handling connection for 38183
+Handling connection for 38183
+Handling connection for 38183
+Handling connection for 38183
+Handling connection for 38183
+Handling connection for 38183
+Handling connection for 38183
+Handling connection for 38183
+Handling connection for 38183
+Handling connection for 38183
+Handling connection for 38183
+Handling connection for 38183
+Handling connection for 38183
+Handling connection for 38183

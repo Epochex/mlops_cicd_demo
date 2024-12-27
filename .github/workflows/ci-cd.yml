@@ -92,16 +92,21 @@ jobs:
 
       - name: Trigger Pipeline Run
         env:
-          KUBEFLOW_HOST: "http://45.149.207.13:6443"
+          KUBEFLOW_HOST: "http://45.149.207.13:38183"
         run: |
-          python -c "
+          python -c '
           from kfp import Client
-          client = Client('${KUBEFLOW_HOST}/pipeline')
-          experiment = client.create_experiment('mnist-experiment')
+          # 初始化客户端，直接指定 host 和 namespace
+          client = Client(host="http://45.149.207.13:38183/pipeline", namespace="kubeflow", verify_ssl=False)
+          
+          # 创建实验
+          experiment = client.create_experiment("mnist-experiment")
+
+          # 创建并运行管道
           run = client.run_pipeline(
               experiment_id=experiment.id,
-              job_name='mnist-pipeline-run',
-              pipeline_package_path='mnist_pipeline.yaml'
+              job_name="mnist-pipeline-run",
+              pipeline_package_path="mnist_pipeline.yaml",
           )
-          print(f'Pipeline run created with ID: {run.run_id}')
-          "
+          print(f"Pipeline run created with ID: {run.run_id}")
+          '

@@ -1,0 +1,19 @@
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: ml-pipeline
+  namespace: kubeflow
+  labels:
+    app.kubernetes.io/component: ml-pipeline
+    app.kubernetes.io/name: kubeflow-pipelines
+    application-crd-id: kubeflow-pipelines
+spec:
+  rules:
+  - from:
+    - source:
+        requestPrincipals: ["*"]
+  selector:
+    matchLabels:
+      app: ml-pipeline
+
+
