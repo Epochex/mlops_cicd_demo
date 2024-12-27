@@ -1,5 +1,4 @@
 # .github/workflows/ci-cd.yml
-
 name: CI/CD Pipeline
 
 on:
@@ -46,23 +45,20 @@ jobs:
 
   deploy:
     needs: build-and-push
-    runs-on: ubuntu-latest  # 使用 GitHub 托管的 runner
+    runs-on: self-hosted  # 改为 self-hosted，这样可以直接访问你的 k8s 集群
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 配置 kubectl
       - name: Setup kubectl
-        uses: azure/setup-kubectl@v3
-        with:
-          version: 'latest'
-
-      # 解码 Kubeconfig（从 Secrets 中获取）
-      - name: Decode Kubeconfig
         run: |
+          # 设置 kubeconfig
           mkdir -p $HOME/.kube
-          echo "${{ secrets.KUBECONFIG }}" | base64 --decode > $HOME/.kube/config
-          chmod 600 $HOME/.kube/config
+          # 使用之前配置的证书和 token
+          kubectl config set-cluster kubeflow --server=https://45.149.207.13:6443 --insecure-skip-tls-verify=true
+          kubectl config set-credentials test-admin --token=${{ secrets.KUBE_TOKEN }}
+          kubectl config set-context kubeflow --cluster=kubeflow --user=test-admin
+          kubectl config use-context kubeflow
 
       # 部署 InferenceService
       - name: Deploy InferenceService
@@ -81,10 +77,12 @@ jobs:
           pip install kfp
 
       - name: Trigger Pipeline Run
+        env:
+          KUBEFLOW_HOST: "http://45.149.207.13:6443"
         run: |
           python -c "
           from kfp import Client
-          client = Client(host='http://45.149.207.13:6443/apis/v1beta1')  # 如果通过 Ingress
+          client = Client('${KUBEFLOW_HOST}/pipeline')
           experiment = client.create_experiment('mnist-experiment')
           run = client.run_pipeline(
               experiment_id=experiment.id,
